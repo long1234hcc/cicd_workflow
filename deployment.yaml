@@ -1,0 +1,35 @@
+# Phần 1: Kịch bản cho "Quản đốc" (Deployment)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-k8s-deployment
+spec:
+  replicas: 1 # Ban đầu chỉ chạy 1 bản sao
+  selector:
+    matchLabels:
+      app: hello-k8s
+  template:
+    metadata:
+      labels:
+        app: hello-k8s
+    spec:
+      containers:
+      - name: hello-k8s-container
+        image: hello-k8s-app:latest # Tên image bạn đã build
+        imagePullPolicy: IfNotPresent # Chỉ kéo image nếu chưa có trên node
+        ports:
+        - containerPort: 8080 # Cổng mà ứng dụng FastAPI của bạn đang chạy
+---
+# Phần 2: Kịch bản cho "Lễ tân" (Service)
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-k8s-service
+spec:
+  type: NodePort # Mở một cổng trên máy để có thể truy cập từ bên ngoài
+  selector:
+    app: hello-k8s # Tìm các Pod có nhãn này để chuyển traffic tới
+  ports:
+    - protocol: TCP
+      port: 8080       # Cổng nội bộ của service
+      targetPort: 8080 # Cổng mà container đang chạy (trong Dockerfile CMD)
